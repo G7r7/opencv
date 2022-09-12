@@ -1,0 +1,9 @@
+version: '2'
+services:
+  opencv-dev-env:
+    container_name: opencv-dev-env
+    build: .
+    image: opencv
+    volumes:
+      - ".:/home/opencv"
+    command: tail -f /dev/null
