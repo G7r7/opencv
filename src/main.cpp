@@ -56,7 +56,7 @@ int main(int argc, char **argv)
         cv::split(rotated_frag, channels);
 
         // Mix
-        cv::Mat mix = M(cv::Rect(fragment_solutions.heigth, fragment_solutions.width, rotated_frag.cols, rotated_frag.rows));
+        cv::Mat mix = M(cv::Rect(100 + fragment_solutions.heigth - image.rows / 2.0, 100 + fragment_solutions.width - image.cols / 2.0, rotated_frag.cols, rotated_frag.rows));
 
         cv::copyTo(rotated_frag, mix, channels[3]);
         // rotated_frag.copyTo(mix);
