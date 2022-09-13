@@ -6,15 +6,18 @@
 struct fragment_solution
 {
     int index;
-    int heigth;
     int width;
+    int heigth;
     float angle;
 };
 
 int main(int argc, char **argv)
 {
     // Empty canvas 1707*775
-    cv::Mat M(1500, 2500, CV_8UC4, cv::Scalar(255, 255, 255, 255));
+    int canvas_width = 1707;
+    int canvas_height = 775;
+
+    cv::Mat M(canvas_height, canvas_width, CV_8UC4, cv::Scalar(255, 255, 255, 255));
 
     // Read frag file
 
@@ -51,15 +54,39 @@ int main(int argc, char **argv)
         cv::Mat rotMat = cv::getRotationMatrix2D(rotPoint, fragment_solutions.angle, 1);
         cv::warpAffine(image, rotated_frag, rotMat, image.size());
 
-        // Mask
-        std::vector<cv::Mat> channels(4);
-        cv::split(rotated_frag, channels);
+        // Truncate image
+        // Diffs are rounded up if not whole
+        int diff_top = fragment_solutions.heigth - ceil(rotated_frag.rows / 2.0) < 0 ? -1 * (fragment_solutions.heigth - ceil(rotated_frag.rows / 2.0)) : 0;
+        int diff_left = fragment_solutions.width - ceil(rotated_frag.cols / 2.0) < 0 ? -1 * (fragment_solutions.width - ceil(rotated_frag.cols / 2.0)) : 0;
+        int diff_bottom = fragment_solutions.heigth + ceil(rotated_frag.rows / 2.0) - canvas_height > 0 ? fragment_solutions.heigth + ceil(rotated_frag.rows / 2.0) - canvas_height : 0;
+        int diff_right = fragment_solutions.width + ceil(rotated_frag.cols / 2.0) - canvas_width > 0 ? fragment_solutions.width + ceil(rotated_frag.cols / 2.0) - canvas_width : 0;
+
+        // We crop the frag by removing the previous founded diffs
+        int trunc_width = rotated_frag.cols - diff_left - diff_right;
+        int trunc_height = rotated_frag.rows - diff_top - diff_bottom;
+
+        cv::Mat truncMat = rotated_frag(cv::Rect(diff_left, diff_top, trunc_width, trunc_height));
 
         // Mix
-        cv::Mat mix = M(cv::Rect(100 + fragment_solutions.heigth - image.rows / 2.0, 100 + fragment_solutions.width - image.cols / 2.0, rotated_frag.cols, rotated_frag.rows));
+        int x_original_center = fragment_solutions.width;
+        int x_truncated_center = x_original_center - diff_left - diff_right;
+        int x_position = x_truncated_center - truncMat.cols / 2;
 
-        cv::copyTo(rotated_frag, mix, channels[3]);
-        // rotated_frag.copyTo(mix);
+        int y_original_center = fragment_solutions.heigth;
+        int y_truncated_center = y_original_center - diff_top - diff_bottom;
+        int y_position = y_truncated_center - truncMat.rows / 2;
+
+        x_position = x_position < 0 ? 0 : x_position;
+        y_position = y_position < 0 ? 0 : y_position;
+
+        cv::Mat mix = M(cv::Rect(x_position, y_position, truncMat.cols, truncMat.rows));
+
+        // Mask
+        std::vector<cv::Mat> channels(4);
+        cv::split(truncMat, channels);
+
+        cv::copyTo(truncMat, mix, channels[3]);
+        // truncMat.copyTo(mix);
     }
 
     // Scale for preview
