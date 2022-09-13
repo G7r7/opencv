@@ -47,3 +47,25 @@ cv::Mat mix = M(cv::Rect(fragment_solutions.heigth - image.rows / 2.0, fragment_
 On obtient alors :
 
 ![](img/good_placement.jpg)
+
+# Fragments dépassant du bord
+
+Pour certains fragment, leur placement débordait du cadre de l'image finale, cela entraînait une erreur à l'éxécution :
+
+```shell
+terminate called after throwing an instance of 'cv::Exception'
+  what():  OpenCV(4.5.4) ./modules/core/src/matrix.cpp:810: error: (-215:Assertion failed) 0 <= roi.x && 0 <= roi.width && roi.x + roi.width <= m.cols && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= m.rows in function 'Mat'
+
+Abandon (core dumped)
+
+```
+
+On a donc corrigé le problème en enlevant pour chaque fragment, la portion qui dépassait du bord de l'image :
+
+```c++
+
+```
+
+Ainsi on obtient une image de la  bonne taille :
+
+![](img/good_image.jpg)

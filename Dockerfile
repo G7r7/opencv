@@ -12,7 +12,7 @@ RUN apt -y install git \
 
 # Build tools
 RUN apt -y install \
-    build-essential cmake ninja-build unzip
+    build-essential cmake ninja-build unzip gdb
 
 # OpenCV
 RUN apt -y install libopencv-dev
