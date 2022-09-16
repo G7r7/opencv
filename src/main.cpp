@@ -4,10 +4,12 @@
 int main(int argc, char **argv)
 {
     cv::Mat image; // variable image of datatype Matrix
-    cv::Mat blurred;
-    image = cv::imread("../images/fourn.png");
+    image = cv::imread("../images/four.png");
 
-    cv::GaussianBlur(image, image, cv::Size(21, 21), 0);
+    cv::GaussianBlur(image, image, cv::Size(3, 3), 0);
+
+    cv::Mat sobel;
+    cv::Sobel(image, sobel, -1, 1, 1);
 
     cv::imshow("Display Image", image);
     cv::waitKey(0);
