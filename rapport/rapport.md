@@ -30,3 +30,15 @@ $rad^2 = (x - c)² + (y - r)²$
 ### 4. Inversement, quelle est la case de l’accumulateur associée au cercle centré dans le pixel (40,40) et de rayon rad = 13 ? Attention : les indices i,j,k doivent être entiers.
 
 $acc(40, 40, 13)$
+
+## Exercice 2
+
+#### Filtrage gaussien
+
+<img title="" src="file:///home/germain/dev/opencv/images/fourn.png" alt="" width="152" data-align="inline"><img title="" src="file:///home/germain/dev/opencv/images/gaussien.png" alt="" data-align="inline">
+
+#### Sobel
+
+<img src="file:///home/germain/dev/opencv/images/fourn.png" title="" alt="" width="148">![](/home/germain/dev/opencv/images/sobel.png)
+
+#### Détermination de la valeur de seuil pour la détection de contour
