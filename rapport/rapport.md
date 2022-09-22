@@ -35,10 +35,10 @@ $acc(40, 40, 13)$
 
 #### Filtrage gaussien
 
-<img title="" src="file:///home/germain/dev/opencv/images/fourn.png" alt="" width="152" data-align="inline"><img title="" src="file:///home/germain/dev/opencv/images/gaussien.png" alt="" data-align="inline">
+![](/images/fourn.png)
 
 #### Sobel
 
-<img src="file:///home/germain/dev/opencv/images/fourn.png" title="" alt="" width="148">![](/home/germain/dev/opencv/images/sobel.png)
+![](/images/sobel.png)
 
 #### Détermination de la valeur de seuil pour la détection de contour
