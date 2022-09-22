@@ -19,7 +19,7 @@ std::vector<Circle> hough(cv::Mat img)
     int nbRows = img.rows;
     int nbCols = img.cols;
     int nbRadius = std::sqrt(img.cols * img.cols + img.rows * img.rows);
-    int gradient_threshold = 1000;
+    int gradient_threshold = 100;
     
     // Initializing at 0
     std::vector<std::vector<std::vector<float>>> acc(
@@ -30,26 +30,17 @@ std::vector<Circle> hough(cv::Mat img)
             )
         );
 
-    // Initialization
-    for (size_t i = 0; i < nbRows; i++)
-    {
-        for (size_t j = 0; j < nbCols; j++)
-        {
-            for (size_t k = 0; k < nbRadius; k++)
-            {
-                acc[i][j][k] = 0;
-            }
-        }
-    }
-
     // Voting for circles
+    int counter = 0;
+    #pragma omp parallel for
     for (size_t i = 0; i < img.rows; i++)
     {
         for (size_t j = 0; j < img.cols; j++)
         {
             // For each "border" pixel 
-            if (img.at<int>(i, j) > gradient_threshold)
+            if ((int)(img.at<uchar>(i, j)) > gradient_threshold)
             {
+                counter++;
                 for (size_t r = 0; r < img.rows; r++)
                 {
                     for (size_t c = 0; c < img.cols; c++)
@@ -59,7 +50,7 @@ std::vector<Circle> hough(cv::Mat img)
                         double radius_raw = std::sqrt(delta_x * delta_x + delta_y * delta_y);
                         int radius = round(radius_raw);
 
-                        if (radius >= 5) { // We ignore circles with radius below 5 pixels
+                        if (radius >= 10) { // We ignore circles with radius below 5 pixels
                             // We compensate the importance of bigger circle on smaller circles
                             // by dividing the vote by their circonference
                             acc[r][c][radius] += 1.f/(2*M_PI*radius);
@@ -69,6 +60,7 @@ std::vector<Circle> hough(cv::Mat img)
             }
         }
     }
+    std::cout << "Used border pixels : " << counter << std::endl;
 
     // Find most voted circle
     std::vector<Score> scores;
@@ -107,17 +99,31 @@ std::vector<Circle> hough(cv::Mat img)
 int main(int argc, char **argv)
 {
     cv::Mat image; // variable image of datatype Matrix
-    image = cv::imread("../images/four.png");
+    image = cv::imread("../images/coins.png");
 
     cv::Mat gray;
     cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
 
-    cv::GaussianBlur(gray, gray, cv::Size(3, 3), 0);
+    // cv::GaussianBlur(gray, gray, cv::Size(3, 3), 0);
 
-    cv::Mat sobel;
-    cv::Sobel(gray, sobel, -1, 1, 1);
+    // Sobel
+    cv::Mat grad_x, grad_y;
+    cv::Sobel(gray, grad_x, CV_16S, 1, 0);
+    cv::Sobel(gray, grad_y, CV_16S, 0, 1);
 
-    std::vector<Circle> circles = hough(sobel);
+    // converting back to CV_8U
+    cv::Mat abs_grad_x, abs_grad_y;
+    cv::convertScaleAbs(grad_x, abs_grad_x);
+    cv::convertScaleAbs(grad_y, abs_grad_y);
+
+    // We try to approximate the gradient by adding both directional gradients
+    cv::Mat grad;
+    cv::addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
+
+    std::vector<Circle> circles = hough(grad);
+
+    cv::Mat display;
+    cv::cvtColor(grad, display, cv::COLOR_GRAY2BGR);
 
     for (auto circle : circles) {
         cv::circle(image, cv::Point(circle.center_x, circle.center_y), circle.radius, cv::Scalar(0, 0, 255));
