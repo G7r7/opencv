@@ -21,7 +21,14 @@ std::vector<Circle> hough(cv::Mat img)
     int nbRadius = std::sqrt(img.cols * img.cols + img.rows * img.rows);
     int gradient_threshold = 1000;
     
-    float acc[nbRows][nbCols][nbRadius];
+    // Initializing at 0
+    std::vector<std::vector<std::vector<float>>> acc(
+        nbRows, 
+        std::vector<std::vector<float>>(
+            nbCols, 
+            std::vector<float>(nbRadius, 0)
+            )
+        );
 
     // Initialization
     for (size_t i = 0; i < nbRows; i++)
