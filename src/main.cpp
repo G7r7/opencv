@@ -14,7 +14,7 @@ struct Score {
     size_t rad;
 };
 
-std::vector<Circle> hough(cv::Mat img)
+std::vector<Circle> hough(cv::Mat img, int circle_number)
 {
     int nbRows = img.rows;
     int nbCols = img.cols;
@@ -81,7 +81,7 @@ std::vector<Circle> hough(cv::Mat img)
     
     // We create a circle for each score
     std::vector<Circle> circles;
-    int circles_limit = 4;
+    int circles_limit = circle_number;
     for (auto score : scores)
     {
         if (circles_limit == 0) { break; }
@@ -96,10 +96,35 @@ std::vector<Circle> hough(cv::Mat img)
     return circles;
 }
 
+void show_usage() {
+    std::cout << "Usage: hough <image path> [<-n | --number> <number of circles>]" << std::endl;
+}
+
 int main(int argc, char **argv)
 {
+    int circle_number = 1;
+
+    if(argc < 2) {
+        show_usage();
+        return -1;
+    }
+    if (argc == 3) {
+        std::cout << "Missing circle number parameter" << std::endl;
+        show_usage();
+        return -1;
+    }
+    if (argc == 4) {
+        circle_number = atoi(argv[3]);
+    }
+
     cv::Mat image; // variable image of datatype Matrix
-    image = cv::imread("../images/coins.png");
+    image = cv::imread(argv[1]);
+
+    // Error Handling
+    if (image.empty()) {
+        std::cout << "Image file not found" << std::endl;
+        return -1;
+    }
 
     cv::Mat gray;
     cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
@@ -120,7 +145,7 @@ int main(int argc, char **argv)
     cv::Mat grad;
     cv::addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
 
-    std::vector<Circle> circles = hough(grad);
+    std::vector<Circle> circles = hough(grad, circle_number);
 
     cv::Mat display;
     cv::cvtColor(grad, display, cv::COLOR_GRAY2BGR);
