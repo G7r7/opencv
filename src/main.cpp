@@ -50,7 +50,7 @@ std::vector<Circle> hough(cv::Mat img, int circle_number)
                         double radius_raw = std::sqrt(delta_x * delta_x + delta_y * delta_y);
                         int radius = round(radius_raw);
 
-                        if (radius >= 10) { // We ignore circles with radius below 5 pixels
+                        if (radius >= 5) { // We ignore circles with radius below 5 pixels
                             // We compensate the importance of bigger circle on smaller circles
                             // by dividing the vote by their circonference
                             acc[r][c][radius] += 1.f/(2*M_PI*radius);
