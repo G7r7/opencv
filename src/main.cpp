@@ -16,12 +16,11 @@ struct Score
     size_t rad;
 };
 
-std::vector<Circle> hough(cv::Mat img, int circle_number)
+std::vector<Circle> hough(cv::Mat img, int circle_number, int gradient_threshold)
 {
     int nbRows = img.rows;
     int nbCols = img.cols;
     int nbRadius = std::sqrt(img.cols * img.cols + img.rows * img.rows);
-    int gradient_threshold = 100;
 
     // Initializing at 0
     std::vector<std::vector<std::vector<float>>> acc(
@@ -63,19 +62,20 @@ std::vector<Circle> hough(cv::Mat img, int circle_number)
     }
     std::cout << "Used border pixels : " << counter << std::endl;
 
-    // Find local maximum
-    for (size_t i = 1; i < nbRows - 4; i += 3)
+// Find local maximum
+#pragma omp parallel for
+    for (size_t i = 1; i < nbRows - 6; i += 5)
     {
-        for (size_t j = 1; j < nbCols - 4; j += 3)
+        for (size_t j = 1; j < nbCols - 6; j += 5)
         {
             std::vector<Score> localScores;
-            for (size_t k = 1; k < nbRadius - 4; k += 3)
+            for (size_t k = 1; k < nbRadius - 6; k += 5)
             {
-                for (size_t index_row = i - 1; index_row < i + 2; index_row++)
+                for (size_t index_row = i - 2; index_row < i + 3; index_row++)
                 {
-                    for (size_t index_col = j - 1; index_col < i + 2; index_col++)
+                    for (size_t index_col = j - 2; index_col < i + 3; index_col++)
                     {
-                        for (size_t index_rad = k - 1; index_rad < k + 2; index_rad++)
+                        for (size_t index_rad = k - 2; index_rad < k + 3; index_rad++)
                         {
                             localScores.push_back({acc[index_row][index_col][index_rad], index_row, index_col, index_rad});
                         }
@@ -87,11 +87,53 @@ std::vector<Circle> hough(cv::Mat img, int circle_number)
                     return a.score > b.score; });
                 if (localScores.size() > 0)
                 {
-                    for (size_t index_row = i - 1; index_row < i + 2; index_row++)
+                    for (size_t index_row = i - 2; index_row < i + 3; index_row++)
                     {
-                        for (size_t index_col = j - 1; index_col < i + 2; index_col++)
+                        for (size_t index_col = j - 2; index_col < i + 3; index_col++)
                         {
-                            for (size_t index_rad = k - 1; index_rad < k + 2; index_rad++)
+                            for (size_t index_rad = k - 2; index_rad < k + 3; index_rad++)
+                            {
+                                if (!(index_row == localScores[0].row && index_col == localScores[0].col && index_rad == localScores[0].rad))
+                                {
+                                    acc[index_row][index_col][index_rad] = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+#pragma omp parallel for
+    for (size_t i = 2; i < nbRows - 6; i += 5)
+    {
+        for (size_t j = 2; j < nbCols - 6; j += 5)
+        {
+            std::vector<Score> localScores;
+            for (size_t k = 2; k < nbRadius - 6; k += 5)
+            {
+                for (size_t index_row = i - 2; index_row < i + 3; index_row++)
+                {
+                    for (size_t index_col = j - 2; index_col < i + 3; index_col++)
+                    {
+                        for (size_t index_rad = k - 2; index_rad < k + 3; index_rad++)
+                        {
+                            localScores.push_back({acc[index_row][index_col][index_rad], index_row, index_col, index_rad});
+                        }
+                    }
+                }
+                std::sort(localScores.begin(), localScores.end(), [](const Score &a, const Score &b)
+                          {
+                    // Biggest comes first
+                    return a.score > b.score; });
+                if (localScores.size() > 0)
+                {
+                    for (size_t index_row = i - 2; index_row < i + 3; index_row++)
+                    {
+                        for (size_t index_col = j - 2; index_col < i + 3; index_col++)
+                        {
+                            for (size_t index_rad = k - 2; index_rad < k + 3; index_rad++)
                             {
                                 if (!(index_row == localScores[0].row && index_col == localScores[0].col && index_rad == localScores[0].rad))
                                 {
@@ -143,12 +185,13 @@ std::vector<Circle> hough(cv::Mat img, int circle_number)
 
 void show_usage()
 {
-    std::cout << "Usage: hough <image path> [<-n | --number> <number of circles>]" << std::endl;
+    std::cout << "Usage: hough <image path> [<-n | --number> <number of circles>] [<-t | --threshold> <gradient threshold>]" << std::endl;
 }
 
 int main(int argc, char **argv)
 {
     int circle_number = 1;
+    int gradient_threshold = 175;
 
     if (argc < 2)
     {
@@ -164,6 +207,17 @@ int main(int argc, char **argv)
     if (argc == 4)
     {
         circle_number = atoi(argv[3]);
+    }
+    if (argc == 5)
+    {
+        std::cout << "Missing gradient threshold parameter" << std::endl;
+        show_usage();
+        return -1;
+    }
+    if (argc == 6)
+    {
+        circle_number = atoi(argv[3]);
+        gradient_threshold = atoi(argv[5]);
     }
 
     cv::Mat image; // variable image of datatype Matrix
@@ -195,7 +249,7 @@ int main(int argc, char **argv)
     cv::Mat grad;
     cv::addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
 
-    std::vector<Circle> circles = hough(grad, circle_number);
+    std::vector<Circle> circles = hough(grad, circle_number, gradient_threshold);
 
     cv::Mat display;
     cv::cvtColor(grad, display, cv::COLOR_GRAY2BGR);
