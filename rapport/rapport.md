@@ -35,11 +35,11 @@ $acc(40, 40, 13)$
 
 #### 1. Dans un premier temps un filtrage gaussien a été appliqué sur l'image d'entrée
 
-![](/images/fourn.png)
+![](/rapport/img/fourn.png)
 
 #### 2. Afin de détecter les contours de l'image nous avons utilisé un filtre de Sobel
 
-![](/images/sobel.png)
+![](/rapport/img/sobel.png)
 
 #### 3. Détermination de la valeur de seuil pour la détection de contour
 
@@ -83,6 +83,10 @@ Suite à la normalisation nous avons pu détecter un cercle plus petit :
 
 ![](/rapport/img/bruit.png)
 
-Ensuite nous avons été confrontés au problème de détectiton de plusieurs cercles quasi-identiques en terme de position et de rayon :
+Ensuite nous avons été confrontés au problème de détection de plusieurs cercles quasi-identiques en terme de position et de rayon :
 
-![](/images/overlap.png)
+![](/rapport/img/overlap.png)
+
+Nous avons donc utilisé la stratégie de recherche des maximums locaux. On a choisi de garder pour chaque voisinnage de 27 possiblités adjacente la valeur la plus élevée. Ainsi nous avons pu grandement augmenter la variété des cercles détéctés :
+
+![](/rapport/img/less-overlap.png)
