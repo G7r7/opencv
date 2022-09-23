@@ -82,3 +82,7 @@ Suite à la normalisation nous avons pu détecter un cercle plus petit :
 ![](/rapport/img/correct.png)
 
 ![](/rapport/img/bruit.png)
+
+Ensuite nous avons été confrontés au problème de détectiton de plusieurs cercles quasi-identiques en terme de position et de rayon :
+
+![](/images/overlap.png)
