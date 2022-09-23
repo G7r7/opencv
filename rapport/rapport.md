@@ -33,12 +33,52 @@ $acc(40, 40, 13)$
 
 ## Exercice 2
 
-#### Filtrage gaussien
+#### 1. Dans un premier temps un filtrage gaussien a été appliqué sur l'image d'entrée
 
 ![](/images/fourn.png)
 
-#### Sobel
+#### 2. Afin de détecter les contours de l'image nous avons utilisé un filtre de Sobel
 
 ![](/images/sobel.png)
 
-#### Détermination de la valeur de seuil pour la détection de contour
+#### 3. Détermination de la valeur de seuil pour la détection de contour
+
+Première tentative détecte qu'un seul grand cercle qui n'existe pas
+
+![](/rapport/img/first_try.png)
+
+Nous avons essayer notre algorithme avec plusieurs cercles.
+Ils étaient placés de manière incohérente, avec une mauvaise taille.
+
+![](/rapport/img/error_type.jpg)
+
+Ce problème ne venait pas de l'algorithme en lui même mais de l'implémentation en C++.
+
+En effet, lorsqu'on appelait la méthode pour récupérer la valeur du gradient d'un pixel on utilisait le mauvais type.
+Cette mauvaise manipulation changeait la valeur :
+
+```cpp
+if ((img.at<int>(i, j)) > gradient_threshold)
+```
+
+```cpp
+if ((img.at<uchar>(i, j)) > gradient_threshold)
+```
+
+Suite à la correction ci-dessus nous avions un meilleur résultat :
+
+![](/rapport/img/sans_correct.png)
+
+Cependant seul le plus grand cercle était détecté.
+
+Pour pallier à ce problème on normalise les valeurs des cercles en fonction du périmètre des cercles.
+
+```cpp
+acc[r][c][radius] += 1.f/(2*M_PI*radius);
+```
+
+Suite à la normalisation nous avons pu détecter un cercle plus petit :
+
+![](/rapport/img/correct.png)
+
+![](/rapport/img/bruit.png)
