@@ -90,3 +90,4 @@ Ensuite nous avons été confrontés au problème de détection de plusieurs cer
 Nous avons donc utilisé la stratégie de recherche des maximums locaux. On a choisi de garder pour chaque voisinnage de 27 possiblités adjacente la valeur la plus élevée. Ainsi nous avons pu grandement augmenter la variété des cercles détéctés :
 
 ![](/rapport/img/less-overlap.png)
+![](/rapport/img/less-overlap2.png)
