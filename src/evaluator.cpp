@@ -62,6 +62,9 @@ int main(int argc, char **argv)
     char solution_line[1000];
     char candidate_line[1000];
 
+    float sum_of_correct_fragment_surfaces = 0;
+    float sum_of_incorrect_fragment_surfaces = 0;
+
     while (solutions.getline(solution_line, 1000) && candidate.getline(candidate_line, 1000))
     {
         fragment_solution solution = parse_fragment_line(solution_line);
@@ -85,7 +88,19 @@ int main(int argc, char **argv)
         int surface = cv::countNonZero(alpha);
         std::cout << "Surface: " << surface << std::endl;
 
-
+        // Store values
+        if (diff_width <= delta_width && diff_height <= delta_height && delta_angle <= delta_angle) // Well placed
+        {
+            sum_of_correct_fragment_surfaces += surface;
+        } else {
+            sum_of_incorrect_fragment_surfaces += surface;
+        }
     }
+    // Calculate score
+    float precision = (sum_of_correct_fragment_surfaces - sum_of_incorrect_fragment_surfaces)
+        / (sum_of_correct_fragment_surfaces + sum_of_incorrect_fragment_surfaces);
+
+    std::cout << "Final score: " << precision << "/1" << std::endl;
+
     return 0;
 }
