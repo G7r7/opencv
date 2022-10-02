@@ -8,3 +8,4 @@ find_package(OpenCV REQUIRED)
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 target_link_libraries(out ${OpenCV_LIBS} )
+target_link_libraries(evaluator ${OpenCV_LIBS} )

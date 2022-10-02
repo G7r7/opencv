@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <fstream>
 #include <vector>
+#include <opencv2/opencv.hpp>
 
 struct fragment_solution
 {
@@ -54,7 +55,7 @@ int main(int argc, char **argv)
     }
     std::string candidate_path = argv[1];
 
-    std::cout << "Params: solution_file -> '" << candidate_path << "' Deltas -> " << delta_width << ":" << delta_height << ":" << delta_angle << std::endl;
+    std::cout << "Params: candidate_file -> '" << candidate_path << "' Deltas -> " << delta_width << ":" << delta_height << ":" << delta_angle << std::endl;
 
     std::ifstream candidate(candidate_path);
     std::ifstream solutions("../ressources/fragments.txt");
@@ -68,9 +69,23 @@ int main(int argc, char **argv)
         std::cout << "Solution : " << solution.index << " " << solution.width << " " << solution.height << " " << solution.angle << " " << std::endl;
         std::cout << "Candidat : " << candidate.index << " " << candidate.width << " " << candidate.height << " " << candidate.angle << " " << std::endl;
         float diff_width, diff_height, diff_angle;
-        diff_width = candidate.width - solution.width;
-        diff_height = candidate.height - solution.height;
-        diff_angle = candidate.angle - solution.angle;
+        diff_width = std::abs(candidate.width - solution.width);
+        diff_height = std::abs(candidate.height - solution.height);
+        diff_angle = std::abs(candidate.angle - solution.angle);
+
+        // Load current fragment image
+        cv::Mat image = cv::imread(std::string("../ressources/frag_eroded/frag_eroded_") + std::to_string(solution.index) + std::string(".png"), cv::IMREAD_UNCHANGED);
+
+        // Get alpha channel
+        std::vector<cv::Mat> channels;
+        cv::split(image, channels);
+        cv::Mat alpha = channels[3];
+
+        // Count number of non-transparents pixels (surface area)
+        int surface = cv::countNonZero(alpha);
+        std::cout << "Surface: " << surface << std::endl;
+
+
     }
     return 0;
 }
