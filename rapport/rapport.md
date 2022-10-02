@@ -1,4 +1,5 @@
-# TP1
+﻿# TP1
+
 ## Erreur de copie des fragments
 
 Lors de la copie des fragments, nous avions des problèmes, les fragments été copiés avec un fond noir de la taille de l'image :
@@ -63,9 +64,51 @@ Abandon (core dumped)
 On a donc corrigé le problème en enlevant pour chaque fragment, la portion qui dépassait du bord de l'image :
 
 ```c++
+// Truncate image
+// Diffs are rounded up if not whole
+int diff_top = fragment_solutions.heigth - ceil(rotated_frag.rows / 2.0) < 0 ? -1 * (fragment_solutions.heigth - ceil(rotated_frag.rows / 2.0)) : 0;
 
+int diff_left = fragment_solutions.width - ceil(rotated_frag.cols / 2.0) < 0 ? -1 * (fragment_solutions.width - ceil(rotated_frag.cols / 2.0)) : 0;
+
+int diff_bottom = fragment_solutions.heigth + ceil(rotated_frag.rows / 2.0) - canvas_height > 0 ? fragment_solutions.heigth + ceil(rotated_frag.rows / 2.0) - canvas_height : 0;
+
+int diff_right = fragment_solutions.width + ceil(rotated_frag.cols / 2.0) - canvas_width > 0 ? fragment_solutions.width + ceil(rotated_frag.cols / 2.0) - canvas_width : 0;
+
+// We crop the frag by removing the previous founded diffs
+int trunc_width = rotated_frag.cols - diff_left - diff_right;
+int trunc_height = rotated_frag.rows - diff_top - diff_bottom;
+
+cv::Mat truncMat = rotated_frag(cv::Rect(diff_left, diff_top, trunc_width, trunc_height));
+
+// Mix
+int x_original_center = fragment_solutions.width;
+int x_truncated_center = x_original_center - diff_left - diff_right;
+int x_position = x_truncated_center - truncMat.cols / 2;
+
+int y_original_center = fragment_solutions.heigth;
+int y_truncated_center = y_original_center - diff_top - diff_bottom;
+int y_position = y_truncated_center - truncMat.rows / 2;
+
+x_position = x_position < 0 ? 0 : x_position;
+y_position = y_position < 0 ? 0 : y_position;
+
+cv::Mat mix = M(cv::Rect(x_position, y_position, truncMat.cols, truncMat.rows));
 ```
 
-Ainsi on obtient une image de la  bonne taille :
+Ainsi on obtient une image de la bonne taille :
 
 ![](img/good_image.jpg)
+
+# Partie 2
+
+Nous n'avons pas rencontré de difficultés particulières dans cette partie du tp.
+
+Notre programme parcours les 2 fichiers, pour chaque fragment on calcule les différents deltas. Puis on calcule la surface du fragment, pour cela on récupère le channel alpha de chaque image.
+
+Notre programme nous donne cette précision avec un fichier solution.txt identique à fragments.txt :
+
+![](img/priority.jpg)
+
+Avec un fichier solution.txt différent de fragments.txt :
+
+![](img/diff_priority.jpg)
