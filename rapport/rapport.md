@@ -91,3 +91,19 @@ Nous avons donc utilisé la stratégie de recherche des maximums locaux. On a ch
 
 ![](/rapport/img/less-overlap.png)
 ![](/rapport/img/less-overlap2.png)
+
+## Exercice 3
+
+### Temps de calcul
+
+Temps de calcul pour `Four.png` : 0.857161 s
+
+L'algorithme est de l'ordre $N⁴$ car on parcours tous les pixels de l'image de taille $N \times N$ (on est déjà à $N²$) puis pour chacun des pixels de contour on reparcours l'image une deuxième fois pour remplir l'accumulateur : $N² \times N² = N⁴$ 
+
+### Temps de calcul estimé pour une image 600x600
+
+On fait une règle de trois pour obtenir le temps d'exécution estimé.
+
+$nb\,tour\,de\,boucle * tps\,exec / nb\,tour\,boucle = 600⁴ \times 0.8/ 100⁴ \approx 19,2 min$
+
+
