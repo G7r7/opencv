@@ -35,22 +35,22 @@ $acc(40, 40, 13)$
 
 #### 1. Dans un premier temps un filtrage gaussien a été appliqué sur l'image d'entrée
 
-![](/rapport/img/fourn.png)
+![](img/gaussien.png)
 
 #### 2. Afin de détecter les contours de l'image nous avons utilisé un filtre de Sobel
 
-![](/rapport/img/sobel.png)
+![](img/sobel.png)
 
 #### 3. Détermination de la valeur de seuil pour la détection de contour
 
 Première tentative détecte qu'un seul grand cercle qui n'existe pas
 
-![](/rapport/img/first_try.png)
+![](img/first_try.png)
 
 Nous avons essayer notre algorithme avec plusieurs cercles.
 Ils étaient placés de manière incohérente, avec une mauvaise taille.
 
-![](/rapport/img/error_type.jpg)
+![](img/error_type.jpg)
 
 Ce problème ne venait pas de l'algorithme en lui même mais de l'implémentation en C++.
 
@@ -67,7 +67,7 @@ if ((img.at<uchar>(i, j)) > gradient_threshold)
 
 Suite à la correction ci-dessus nous avions un meilleur résultat :
 
-![](/rapport/img/sans_correct.png)
+![](img/sans_correct.png)
 
 Cependant seul le plus grand cercle était détecté.
 
@@ -79,18 +79,18 @@ acc[r][c][radius] += 1.f/(2*M_PI*radius);
 
 Suite à la normalisation nous avons pu détecter un cercle plus petit :
 
-![](/rapport/img/correct.png)
+![](img/correct.png)
 
-![](/rapport/img/bruit.png)
+![](img/bruit.png)
 
 Ensuite nous avons été confrontés au problème de détection de plusieurs cercles quasi-identiques en terme de position et de rayon :
 
-![](/rapport/img/overlap.png)
+![](img/overlap.png)
 
 Nous avons donc utilisé la stratégie de recherche des maximums locaux. On a choisi de garder pour chaque voisinnage de 27 possiblités adjacente la valeur la plus élevée. Ainsi nous avons pu grandement augmenter la variété des cercles détéctés :
 
-![](/rapport/img/less-overlap.png)
-![](/rapport/img/less-overlap2.png)
+![](img/less-overlap.png)
+![](img/less-overlap2.png)
 
 Cependant cette recherche réduisait fortement les performances. Après avoir fait une revue du code nous avons decouvert
 plusieurs erreurs.
@@ -105,7 +105,7 @@ En regardant plus de cases voisine (31 cases voisines) on élimine ces cercles.
 
 Grâce à ces corrections nous avons pu détecter les cercles de l'images coins2.png dans un temps acceptable (65 secondes) :
 
-![](/rapport/img/coins2.png)
+![](img/coins2.png)
 
 Afin de détecté les cercles nous avons utilisé des paramètres différents en fonction des images :
 
