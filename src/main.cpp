@@ -17,7 +17,7 @@ struct Score
     size_t rad;
 };
 
-std::vector<Circle> hough(cv::Mat img, int circle_number, int gradient_threshold)
+std::vector<Circle> hough(cv::Mat img, int circle_number, int gradient_threshold, int min_radius)
 {
     int nbRows = img.rows;
     int nbCols = img.cols;
@@ -32,7 +32,7 @@ std::vector<Circle> hough(cv::Mat img, int circle_number, int gradient_threshold
 
     // Voting for circles
     int counter = 0;
-    #pragma omp parallel for
+#pragma omp parallel for
     for (size_t i = 0; i < img.rows; i++)
     {
         std::cout << "Voting for row: " << i << std::endl;
@@ -51,7 +51,7 @@ std::vector<Circle> hough(cv::Mat img, int circle_number, int gradient_threshold
                         double radius_raw = std::sqrt(delta_x * delta_x + delta_y * delta_y);
                         int radius = round(radius_raw);
 
-                        if (radius >= 50)
+                        if (radius >= min_radius)
                         { // We ignore circles with radius below 5 pixels
                             // We compensate the importance of bigger circle on smaller circles
                             // by dividing the vote by their circonference
@@ -64,11 +64,10 @@ std::vector<Circle> hough(cv::Mat img, int circle_number, int gradient_threshold
     }
     std::cout << "Used border pixels : " << counter << std::endl;
 
-int cube_side_size = 31;
-int cube_side_center_idx = std::floor(cube_side_size / 2);
-
-// Find local maximum
-    #pragma omp parallel for
+    int cube_side_size = 31;
+    int cube_side_center_idx = std::floor(cube_side_size / 2);
+    // Find local maximum
+#pragma omp parallel for
     for (size_t i = cube_side_center_idx; i < nbRows - cube_side_size + 1; i += cube_side_size)
     {
         for (size_t j = cube_side_center_idx; j < nbCols - cube_side_size + 1; j += cube_side_size)
@@ -87,11 +86,11 @@ int cube_side_center_idx = std::floor(cube_side_size / 2);
                         }
                     }
                 }
-                
-                std::sort(localScores.begin(), localScores.end(), [](const Score &a, const Score &b) {
+
+                std::sort(localScores.begin(), localScores.end(), [](const Score &a, const Score &b)
+                          {
                     // Biggest comes first
-                    return a.score > b.score; 
-                });
+                    return a.score > b.score; });
 
                 if (localScores.size() > 0)
                 {
@@ -150,13 +149,14 @@ int cube_side_center_idx = std::floor(cube_side_size / 2);
 
 void show_usage()
 {
-    std::cout << "Usage: hough <image path> [<-n | --number> <number of circles>] [<-t | --threshold> <gradient threshold>]" << std::endl;
+    std::cout << "Usage: hough <image path> [<-n | --number> <number of circles>] [<-t | --threshold> <gradient threshold>] [<-m | --min_radius <minimum of radius>]" << std::endl;
 }
 
 int main(int argc, char **argv)
 {
     int circle_number = 1;
     int gradient_threshold = 175;
+    int min_radius = 5;
 
     if (argc < 2)
     {
@@ -183,6 +183,20 @@ int main(int argc, char **argv)
     {
         circle_number = atoi(argv[3]);
         gradient_threshold = atoi(argv[5]);
+    }
+
+    if (argc == 7)
+    {
+        std::cout << "Missing gradient min radius parameter" << std::endl;
+        show_usage();
+        return -1;
+    }
+
+    if (argc == 8)
+    {
+        circle_number = atoi(argv[3]);
+        gradient_threshold = atoi(argv[5]);
+        min_radius = atoi(argv[7]);
     }
 
     cv::Mat image; // variable image of datatype Matrix
@@ -215,9 +229,9 @@ int main(int argc, char **argv)
     cv::addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
 
     auto start = std::chrono::high_resolution_clock::now();
-    std::vector<Circle> circles = hough(grad, circle_number, gradient_threshold);
+    std::vector<Circle> circles = hough(grad, circle_number, gradient_threshold, min_radius);
     auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> diff = end-start;
+    std::chrono::duration<double> diff = end - start;
 
     std::cout << "Execution time: " << diff.count() << std::endl;
 

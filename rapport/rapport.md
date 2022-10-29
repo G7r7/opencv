@@ -92,18 +92,68 @@ Nous avons donc utilisé la stratégie de recherche des maximums locaux. On a ch
 ![](/rapport/img/less-overlap.png)
 ![](/rapport/img/less-overlap2.png)
 
+Cependant cette recherche réduisait fortement les performances. Après avoir fait une revue du code nous avons decouvert
+plusieurs erreurs.
+
+- Lors du parcours des 26 cases voisines, nous parcourions plus de cases que nécessaire.
+
+- Nous utilisons un tableau qui contient les valeurs de 26 cases voisines, cependant il n'était pas réintialiser ce qui comprometait le bon résultat et les performances.
+
+Après avoir appliqué les correctifs certains cercles côte à côte était détecté.
+
+En regardant plus de cases voisine (31 cases voisines) on élimine ces cercles.
+
+Grâce à ces corrections nous avons pu détecter les cercles de l'images coins2.png dans un temps acceptable (65 secondes) :
+
+![](/rapport/img/coins2.png)
+
+Afin de détecté les cercles nous avons utilisé des paramètres différents en fonction des images :
+
+four.jpg :
+
+> gradient threshold = 100  
+> nb de cases voisines = 31  
+> radius minimum = 5  
+> nb de cercle à détecter = 5
+
+fourn.jpg :
+
+> gradient threshold = 160  
+> nb de cases voisines = 31  
+> radius minimum = 5  
+> nb de cercle à détecter = 5
+
+MoonCoin.png :
+
+> gradient threshold = 100  
+> nb de cases voisines = 31  
+> radius minimum = 5  
+> nb de cercle à détecter = 1
+
+coins.jpg :
+
+> gradient threshold = 115  
+> nb de cases voisines = 31  
+> radius minimum = 5  
+> nb de cercle à détecter = 2
+
+coins2.jpg :
+
+> gradient threshold = 200  
+> nb de cases voisines = 31  
+> radius minimum = 50  
+> nb de cercle à détecter = 10
+
 ## Exercice 3
 
 ### Temps de calcul
 
 Temps de calcul pour `Four.png` : 0.857161 s
 
-L'algorithme est de l'ordre $N⁴$ car on parcours tous les pixels de l'image de taille $N \times N$ (on est déjà à $N²$) puis pour chacun des pixels de contour on reparcours l'image une deuxième fois pour remplir l'accumulateur : $N² \times N² = N⁴$ 
+L'algorithme est de l'ordre $N⁴$ car on parcours tous les pixels de l'image de taille $N \times N$ (on est déjà à $N²$) puis pour chacun des pixels de contour on reparcours l'image une deuxième fois pour remplir l'accumulateur : $N² \times N² = N⁴$
 
 ### Temps de calcul estimé pour une image 600x600
 
 On fait une règle de trois pour obtenir le temps d'exécution estimé.
 
 $nb\,tour\,de\,boucle * tps\,exec / nb\,tour\,boucle = 600⁴ \times 0.8/ 100⁴ \approx 19,2 min$
-
-
