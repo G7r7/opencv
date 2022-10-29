@@ -35,6 +35,7 @@ std::vector<Circle> hough(cv::Mat img, int circle_number, int gradient_threshold
 #pragma omp parallel for
     for (size_t i = 0; i < img.rows; i++)
     {
+        std::cout << "Voting for row: " << i << std::endl;
         for (size_t j = 0; j < img.cols; j++)
         {
             // For each "border" pixel
@@ -63,48 +64,53 @@ std::vector<Circle> hough(cv::Mat img, int circle_number, int gradient_threshold
     }
     std::cout << "Used border pixels : " << counter << std::endl;
 
+int cube_side_size = 9;
+int cube_side_center_idx = std::floor(cube_side_size / 2);
+
 // Find local maximum
 #pragma omp parallel for
-    for (size_t i = 1; i < nbRows - 4; i += 3)
+    for (size_t i = cube_side_center_idx; i < nbRows - cube_side_size + 1; i += cube_side_size)
     {
-        for (size_t j = 1; j < nbCols - 4; j += 3)
+        for (size_t j = cube_side_center_idx; j < nbCols - cube_side_size + 1; j += cube_side_size)
         {
-            std::vector<Score> localScores;
-            for (size_t k = 1; k < nbRadius - 4; k += 3)
+            for (size_t k = cube_side_center_idx; k < nbRadius - cube_side_size + 1; k += cube_side_size)
             {
-                for (size_t index_row = i - 1; index_row < i + 2; index_row++)
+                std::cout << "Finding local maximum for cube centered at : (" << i << "," << j << "," << k << ")" << std::endl;
+                std::vector<Score> localScores;
+                for (size_t index_row = i - cube_side_center_idx; index_row < i + cube_side_center_idx + 1; index_row++)
                 {
-                    for (size_t index_col = j - 1; index_col < i + 2; index_col++)
+                    for (size_t index_col = j - cube_side_center_idx; index_col < j + cube_side_center_idx + 1; index_col++)
                     {
-                        for (size_t index_rad = k - 1; index_rad < k + 2; index_rad++)
+                        for (size_t index_rad = k - cube_side_center_idx; index_rad < k + cube_side_center_idx + 1; index_rad++)
                         {
                             localScores.push_back({acc[index_row][index_col][index_rad], index_row, index_col, index_rad});
                         }
                     }
                 }
-                std::sort(localScores.begin(), localScores.end(), [](const Score &a, const Score &b)
-                          {
+                
+                std::sort(localScores.begin(), localScores.end(), [](const Score &a, const Score &b) {
                     // Biggest comes first
-                    return a.score > b.score; });
+                    return a.score > b.score; 
+                });
+
                 if (localScores.size() > 0)
                 {
-                    for (size_t index_row = i - 1; index_row < i + 2; index_row++)
+                    for (size_t index_row = i - cube_side_center_idx; index_row < i + cube_side_center_idx + 1; index_row++)
                     {
-                        for (size_t index_col = j - 1; index_col < i + 2; index_col++)
+                        for (size_t index_col = j - cube_side_center_idx; index_col < j + cube_side_center_idx + 1; index_col++)
                         {
-                            for (size_t index_rad = k - 1; index_rad < k + 2; index_rad++)
+                            for (size_t index_rad = k - cube_side_center_idx; index_rad < k + cube_side_center_idx + 1; index_rad++)
                             {
-                                if (!(index_row == localScores[0].row && index_col == localScores[0].col && index_rad == localScores[0].rad))
-                                {
-                                    acc[index_row][index_col][index_rad] = 0;
-                                }
+                                acc[index_row][index_col][index_rad] = 0;
                             }
                         }
                     }
+                    acc[localScores[0].row][localScores[0].col][localScores[0].rad] = localScores[0].score;
                 }
             }
         }
     }
+    std::cout << "Fin de la recherche des maximums locaux" << std::endl;
 
     // Find most voted circle
     std::vector<Score> scores;
