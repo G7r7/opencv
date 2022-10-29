@@ -32,7 +32,7 @@ std::vector<Circle> hough(cv::Mat img, int circle_number, int gradient_threshold
 
     // Voting for circles
     int counter = 0;
-#pragma omp parallel for
+    #pragma omp parallel for
     for (size_t i = 0; i < img.rows; i++)
     {
         std::cout << "Voting for row: " << i << std::endl;
@@ -51,7 +51,7 @@ std::vector<Circle> hough(cv::Mat img, int circle_number, int gradient_threshold
                         double radius_raw = std::sqrt(delta_x * delta_x + delta_y * delta_y);
                         int radius = round(radius_raw);
 
-                        if (radius >= 5)
+                        if (radius >= 50)
                         { // We ignore circles with radius below 5 pixels
                             // We compensate the importance of bigger circle on smaller circles
                             // by dividing the vote by their circonference
@@ -64,11 +64,11 @@ std::vector<Circle> hough(cv::Mat img, int circle_number, int gradient_threshold
     }
     std::cout << "Used border pixels : " << counter << std::endl;
 
-int cube_side_size = 9;
+int cube_side_size = 31;
 int cube_side_center_idx = std::floor(cube_side_size / 2);
 
 // Find local maximum
-#pragma omp parallel for
+    #pragma omp parallel for
     for (size_t i = cube_side_center_idx; i < nbRows - cube_side_size + 1; i += cube_side_size)
     {
         for (size_t j = cube_side_center_idx; j < nbCols - cube_side_size + 1; j += cube_side_size)
